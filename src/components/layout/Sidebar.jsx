@@ -1,0 +1,176 @@
+/**
+ * Sidebar – left navigation panel.
+ * Contains the app logo, entity nav links, and a footer badge.
+ */
+
+import clsx from 'clsx';
+import {
+  LayoutDashboard,
+  Zap,
+  BatteryCharging,
+  Truck,
+  SlidersHorizontal,
+  Layers,
+  ChevronRight,
+  LineChart,
+  TrendingUp,
+  FolderOpen,
+} from 'lucide-react';
+import { useSimulatorStore, selectControls, selectSettings } from '../../store/useSimulatorStore';
+import { getScenarioMeta } from '../../data/scenarios';
+
+// Each nav item maps to a page key used in the store
+const NAV_ITEMS = [
+  {
+    id: 'dashboard',
+    label: 'Dashboard',
+    sub: 'Consolidated overview',
+    icon: LayoutDashboard,
+    color: 'text-slate-300',
+    activeColor: 'text-white',
+    activeBg: 'bg-blue-600',
+  },
+  {
+    id: 'financials',
+    label: 'Entity Financials',
+    sub: 'Battery · Platform · Fleet',
+    icon: LineChart,
+    color: 'text-indigo-400',
+    activeColor: 'text-white',
+    activeBg: 'bg-indigo-600',
+  },
+  {
+    id: 'insights',
+    label: 'Scale Insights',
+    sub: 'IRR · cost curves · scenarios',
+    icon: TrendingUp,
+    color: 'text-teal-400',
+    activeColor: 'text-white',
+    activeBg: 'bg-teal-600',
+  },
+  {
+    id: 'scenarios',
+    label: 'Scenarios',
+    sub: 'Compare Base · Optimistic · Stress',
+    icon: Layers,
+    color: 'text-violet-400',
+    activeColor: 'text-white',
+    activeBg: 'bg-violet-600',
+  },
+  {
+    id: 'saveload',
+    label: 'Save / Export',
+    sub: 'Named slots · JSON · CSV',
+    icon: FolderOpen,
+    color: 'text-orange-400',
+    activeColor: 'text-white',
+    activeBg: 'bg-orange-600',
+  },
+  {
+    id: 'assumptions',
+    label: 'Assumptions',
+    sub: 'All model inputs',
+    icon: SlidersHorizontal,
+    color: 'text-slate-400',
+    activeColor: 'text-white',
+    activeBg: 'bg-slate-600',
+  },
+];
+
+export function Sidebar() {
+  const activePage  = useSimulatorStore((s) => s.activePage);
+  const setActivePage = useSimulatorStore((s) => s.setActivePage);
+  const settings    = useSimulatorStore(selectSettings);
+  const controls    = useSimulatorStore(selectControls);
+  const scenario    = controls.selectedScenario;
+  const scenMeta    = getScenarioMeta(scenario);
+
+  return (
+    <aside className="w-60 shrink-0 bg-slate-900 flex flex-col h-screen sticky top-0 overflow-y-auto">
+
+      {/* ── Logo ─────────────────────────────────────────────────────── */}
+      <div className="px-5 py-5 border-b border-slate-800">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg">
+            <span className="text-white font-bold text-sm">A2</span>
+          </div>
+          <div>
+            <p className="text-white font-semibold text-sm leading-tight">
+              Investor Simulator
+            </p>
+            <p className="text-slate-500 text-xs">{settings.corridorName}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Navigation ───────────────────────────────────────────────── */}
+      <nav className="flex-1 py-4 px-3 space-y-0.5">
+        {NAV_ITEMS.map((item) => {
+          const Icon = item.icon;
+          const active = activePage === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActivePage(item.id)}
+              className={clsx(
+                'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all',
+                active
+                  ? `${item.activeBg} shadow-sm`
+                  : 'hover:bg-slate-800/70',
+              )}
+            >
+              <Icon
+                className={clsx(
+                  'w-4 h-4 shrink-0',
+                  active ? item.activeColor : item.color,
+                )}
+              />
+              <div className="flex-1 min-w-0">
+                <p
+                  className={clsx(
+                    'text-sm font-medium leading-tight',
+                    active ? 'text-white' : 'text-slate-300',
+                  )}
+                >
+                  {item.label}
+                </p>
+                <p
+                  className={clsx(
+                    'text-xs truncate mt-0.5',
+                    active ? 'text-white/70' : 'text-slate-500',
+                  )}
+                >
+                  {item.sub}
+                </p>
+              </div>
+              {active && (
+                <ChevronRight className="w-3.5 h-3.5 text-white/60 shrink-0" />
+              )}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* ── Footer ───────────────────────────────────────────────────── */}
+      <div className="px-4 py-4 border-t border-slate-800 space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-slate-500">Scenario</span>
+          <span
+            className={clsx(
+              'text-xs font-semibold px-2 py-0.5 rounded-full',
+              scenario === 'conservative' && 'bg-amber-900 text-amber-400',
+              scenario === 'base'         && 'bg-blue-900 text-blue-400',
+              scenario === 'bull'         && 'bg-emerald-900 text-emerald-400',
+              scenario === 'bear'         && 'bg-red-900 text-red-400',
+            )}
+          >
+            {scenMeta.label}
+          </span>
+        </div>
+        <p className="text-xs text-slate-600">
+          Data saved in your browser.
+        </p>
+      </div>
+    </aside>
+  );
+}
