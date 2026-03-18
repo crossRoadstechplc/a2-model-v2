@@ -13,7 +13,6 @@ import { InsightsPage }           from './pages/InsightsPage';
 import { PlatformPage }            from './pages/PlatformPage';
 import { BatteryPage }             from './pages/BatteryPage';
 import { FleetPage }               from './pages/FleetPage';
-import { AssumptionsPage }         from './pages/AssumptionsPage';
 import { ScenarioComparisonPage }  from './pages/ScenarioComparisonPage';
 import { SaveLoadPage }            from './pages/SaveLoadPage';
 import { AdminPage }               from './pages/AdminPage';
@@ -27,7 +26,6 @@ const PAGE_MAP = {
   platform:    <PlatformPage />,
   battery:     <BatteryPage />,
   fleet:       <FleetPage />,
-  assumptions: <AssumptionsPage />,
   admin:       <AdminPage />,
 };
 

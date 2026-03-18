@@ -6,21 +6,37 @@
  * @see API.md POST /auth/complete-walkthrough
  */
 
-import { useState } from 'react';
+import clsx from 'clsx';
+import { useEffect, useState } from 'react';
 import useAuthStore from '../../store/useAuthStore';
 import { WALKTHROUGH_STEPS } from './WalkthroughSteps';
+import { useSimulatorStore } from '../../store/useSimulatorStore';
 
 export function WalkthroughModal({ replay = false }) {
   const [step, setStep] = useState(0);
   const completeWalkthrough = useAuthStore((s) => s.completeWalkthrough);
   const completeWalkthroughLoading = useAuthStore((s) => s.completeWalkthroughLoading);
   const setShowWalkthroughReplay = useAuthStore((s) => s.setShowWalkthroughReplay);
+  const setActivePage = useSimulatorStore((s) => s.setActivePage);
+  const setPanelOpen = useSimulatorStore((s) => s.setPanelOpen);
+  const setInputsFocusSection = useSimulatorStore((s) => s.setInputsFocusSection);
 
   const current = WALKTHROUGH_STEPS[step];
   const isLast = step === WALKTHROUGH_STEPS.length - 1;
+  const isFirst = step === 0;
+  const isDocked = false;
+
+  useEffect(() => {
+    const a = current?.action;
+    if (!a) return;
+    if (typeof a.panelOpen === 'boolean') setPanelOpen(a.panelOpen);
+    if (a.activePage) setActivePage(a.activePage);
+    if ('focusSection' in a) setInputsFocusSection(a.focusSection ?? null);
+  }, [current, setActivePage, setInputsFocusSection, setPanelOpen]);
 
   const handleNext = () => {
     if (isLast) {
+      setInputsFocusSection(null);
       if (replay) {
         setShowWalkthroughReplay(false);
       } else {
@@ -31,7 +47,13 @@ export function WalkthroughModal({ replay = false }) {
     }
   };
 
+  const handlePrev = () => {
+    if (isFirst) return;
+    setStep((s) => Math.max(0, s - 1));
+  };
+
   const handleSkip = () => {
+    setInputsFocusSection(null);
     if (replay) {
       setShowWalkthroughReplay(false);
     } else {
@@ -41,7 +63,11 @@ export function WalkthroughModal({ replay = false }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className={clsx(
+        'fixed inset-0 z-50 p-4',
+        'bg-black/20',
+        'flex items-center justify-center',
+      )}
       data-testid="walkthrough-modal"
       role="dialog"
       aria-modal="true"
@@ -78,8 +104,18 @@ export function WalkthroughModal({ replay = false }) {
             className="text-sm text-slate-600 underline hover:text-slate-800 disabled:opacity-50"
             data-testid="walkthrough-skip"
           >
-            Skip
+            Close
           </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handlePrev}
+              disabled={completeWalkthroughLoading || isFirst}
+              className="rounded-lg bg-slate-800 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+              data-testid="walkthrough-prev"
+            >
+              Previous
+            </button>
           <button
             type="button"
             onClick={handleNext}
@@ -93,6 +129,7 @@ export function WalkthroughModal({ replay = false }) {
                 ? 'Finish'
                 : 'Next'}
           </button>
+          </div>
         </div>
       </div>
     </div>

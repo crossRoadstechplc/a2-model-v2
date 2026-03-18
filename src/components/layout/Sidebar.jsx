@@ -21,6 +21,17 @@ import { getScenarioMeta } from '../../data/scenarios';
 // Each nav item maps to a page key used in the store
 const NAV_ITEMS = [
   {
+    section: 'Inputs',
+    id: 'assumptions',
+    label: 'Assumptions',
+    sub: 'All model inputs',
+    icon: SlidersHorizontal,
+    color: 'text-slate-400',
+    activeColor: 'text-white',
+    activeBg: 'bg-slate-600',
+  },
+  {
+    section: 'Outputs',
     id: 'dashboard',
     label: 'Dashboard',
     sub: 'Consolidated overview',
@@ -57,6 +68,7 @@ const NAV_ITEMS = [
     activeBg: 'bg-violet-600',
   },
   {
+    section: 'Actions',
     id: 'saveload',
     label: 'Save / Export',
     sub: 'Named slots · JSON · CSV',
@@ -65,20 +77,12 @@ const NAV_ITEMS = [
     activeColor: 'text-white',
     activeBg: 'bg-orange-600',
   },
-  {
-    id: 'assumptions',
-    label: 'Assumptions',
-    sub: 'All model inputs',
-    icon: SlidersHorizontal,
-    color: 'text-slate-400',
-    activeColor: 'text-white',
-    activeBg: 'bg-slate-600',
-  },
 ];
 
 export function Sidebar() {
   const activePage  = useSimulatorStore((s) => s.activePage);
   const setActivePage = useSimulatorStore((s) => s.setActivePage);
+  const setPanelOpen = useSimulatorStore((s) => s.setPanelOpen);
   const settings    = useSimulatorStore(selectSettings);
   const controls    = useSimulatorStore(selectControls);
   const scenario    = controls.selectedScenario;
@@ -108,45 +112,62 @@ export function Sidebar() {
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const active = activePage === item.id;
+          const isAssumptions = item.id === 'assumptions';
           return (
-            <button
-              key={item.id}
-              onClick={() => setActivePage(item.id)}
-              className={clsx(
-                'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all',
-                active
-                  ? `${item.activeBg} shadow-sm`
-                  : 'hover:bg-slate-800/70',
+            <div key={item.id}>
+              {item.section && (
+                <div className="px-3 pt-2 pb-1">
+                  <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
+                    {item.section}
+                  </p>
+                </div>
               )}
-            >
-              <Icon
+              <button
+                type="button"
+                onClick={() => {
+                  if (isAssumptions) {
+                    setPanelOpen(true);
+                    setActivePage('dashboard');
+                    return;
+                  }
+                  setActivePage(item.id);
+                }}
                 className={clsx(
-                  'w-4 h-4 shrink-0',
-                  active ? item.activeColor : item.color,
+                  'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all',
+                  active
+                    ? `${item.activeBg} shadow-sm`
+                    : 'hover:bg-slate-800/70',
                 )}
-              />
-              <div className="flex-1 min-w-0">
-                <p
+              >
+                <Icon
                   className={clsx(
-                    'text-sm font-medium leading-tight',
-                    active ? 'text-white' : 'text-slate-300',
+                    'w-4 h-4 shrink-0',
+                    active ? item.activeColor : item.color,
                   )}
-                >
-                  {item.label}
-                </p>
-                <p
-                  className={clsx(
-                    'text-xs truncate mt-0.5',
-                    active ? 'text-white/70' : 'text-slate-500',
-                  )}
-                >
-                  {item.sub}
-                </p>
-              </div>
-              {active && (
-                <ChevronRight className="w-3.5 h-3.5 text-white/60 shrink-0" />
-              )}
-            </button>
+                />
+                <div className="flex-1 min-w-0">
+                  <p
+                    className={clsx(
+                      'text-sm font-medium leading-tight',
+                      active ? 'text-white' : 'text-slate-300',
+                    )}
+                  >
+                    {item.label}
+                  </p>
+                  <p
+                    className={clsx(
+                      'text-xs truncate mt-0.5',
+                      active ? 'text-white/70' : 'text-slate-500',
+                    )}
+                  >
+                    {item.sub}
+                  </p>
+                </div>
+                {active && (
+                  <ChevronRight className="w-3.5 h-3.5 text-white/60 shrink-0" />
+                )}
+              </button>
+            </div>
           );
         })}
       </nav>

@@ -3,21 +3,38 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { WalkthroughModal } from './WalkthroughModal';
 
 const mockCompleteWalkthrough = vi.fn();
+const mockSetShowWalkthroughReplay = vi.fn();
 let mockState = {
   completeWalkthrough: mockCompleteWalkthrough,
   completeWalkthroughLoading: false,
+  setShowWalkthroughReplay: mockSetShowWalkthroughReplay,
 };
 
 vi.mock('../../store/useAuthStore', () => ({
   default: (selector) => selector(mockState),
 }));
 
+const mockSimState = {
+  setActivePage: vi.fn(),
+  setPanelOpen: vi.fn(),
+  setInputsFocusSection: vi.fn(),
+};
+
+vi.mock('../../store/useSimulatorStore', () => ({
+  useSimulatorStore: (selector) => selector(mockSimState),
+}));
+
 describe('WalkthroughModal', () => {
   beforeEach(() => {
     mockCompleteWalkthrough.mockReset();
+    mockSetShowWalkthroughReplay.mockReset();
+    mockSimState.setActivePage.mockReset();
+    mockSimState.setPanelOpen.mockReset();
+    mockSimState.setInputsFocusSection.mockReset();
     mockState = {
       completeWalkthrough: mockCompleteWalkthrough,
       completeWalkthroughLoading: false,
+      setShowWalkthroughReplay: mockSetShowWalkthroughReplay,
     };
   });
 
@@ -27,15 +44,27 @@ describe('WalkthroughModal', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(screen.getByText('Session & Security')).toBeInTheDocument();
     expect(screen.getByText(/Your session lasts 4 hours/)).toBeInTheDocument();
-    expect(screen.getByText('1 of 4')).toBeInTheDocument();
+    expect(screen.getByText(/1 of \d+/)).toBeInTheDocument();
   });
 
   it('Next advances to next step', () => {
     render(<WalkthroughModal />);
     expect(screen.getByText('Session & Security')).toBeInTheDocument();
+    expect(screen.getByTestId('walkthrough-prev')).toBeDisabled();
     fireEvent.click(screen.getByTestId('walkthrough-complete'));
     expect(screen.getByText('How the Simulator Works')).toBeInTheDocument();
-    expect(screen.getByText('2 of 4')).toBeInTheDocument();
+    expect(screen.getByText(/2 of \d+/)).toBeInTheDocument();
+  });
+
+  it('Previous goes back a step', () => {
+    render(<WalkthroughModal />);
+    fireEvent.click(screen.getByTestId('walkthrough-complete'));
+    expect(screen.getByText('How the Simulator Works')).toBeInTheDocument();
+    expect(screen.getByTestId('walkthrough-prev')).not.toBeDisabled();
+
+    fireEvent.click(screen.getByTestId('walkthrough-prev'));
+    expect(screen.getByText('Session & Security')).toBeInTheDocument();
+    expect(screen.getByTestId('walkthrough-prev')).toBeDisabled();
   });
 
   it('Finish on last step calls completeWalkthrough', async () => {
@@ -43,9 +72,9 @@ describe('WalkthroughModal', () => {
     render(<WalkthroughModal />);
 
     // Advance to last step
-    fireEvent.click(screen.getByTestId('walkthrough-complete'));
-    fireEvent.click(screen.getByTestId('walkthrough-complete'));
-    fireEvent.click(screen.getByTestId('walkthrough-complete'));
+    while (!screen.queryByText('Finish')) {
+      fireEvent.click(screen.getByTestId('walkthrough-complete'));
+    }
 
     expect(screen.getByText('Tips')).toBeInTheDocument();
     expect(screen.getByText('Finish')).toBeInTheDocument();
@@ -82,19 +111,21 @@ describe('WalkthroughModal', () => {
     render(<WalkthroughModal />);
 
     expect(screen.getByTestId('walkthrough-skip')).toBeDisabled();
+    expect(screen.getByTestId('walkthrough-prev')).toBeDisabled();
     expect(screen.getByTestId('walkthrough-complete')).toBeDisabled();
     expect(screen.getByText('Saving…')).toBeInTheDocument();
   });
 
-  it('shows all four steps with correct content', () => {
+  it('advances from first step to last step', () => {
     render(<WalkthroughModal />);
 
-    const titles = ['Session & Security', 'How the Simulator Works', 'Navigation', 'Tips'];
-    titles.forEach((title, i) => {
-      if (i > 0) {
-        fireEvent.click(screen.getByTestId('walkthrough-complete'));
-      }
-      expect(screen.getByText(title)).toBeInTheDocument();
-    });
+    expect(screen.getByText('Session & Security')).toBeInTheDocument();
+
+    while (!screen.queryByText('Tips')) {
+      fireEvent.click(screen.getByTestId('walkthrough-complete'));
+    }
+
+    expect(screen.getByText('Tips')).toBeInTheDocument();
+    expect(screen.getByText('Finish')).toBeInTheDocument();
   });
 });

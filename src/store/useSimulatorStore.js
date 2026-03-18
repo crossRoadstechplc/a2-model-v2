@@ -148,7 +148,14 @@ export const useSimulatorStore = create(
       results:    INITIAL_RESULTS,
 
       /** Whether the left assumptions panel is visible. */
-      panelOpen:  false,
+      panelOpen:  true,
+
+      /**
+       * Walkthrough-only: which Inputs accordion section to focus/open.
+       * Not persisted; safe to ignore outside the walkthrough.
+       * @type {'system'|'battery'|'platform'|'fleet'|'controls'|null}
+       */
+      inputsFocusSection: null,
 
       // ── Panel visibility ──────────────────────────────────────────────────
 
@@ -156,6 +163,8 @@ export const useSimulatorStore = create(
       togglePanel:  () => set((s) => ({ panelOpen: !s.panelOpen })),
       /** Directly set panel open state. */
       setPanelOpen: (v) => set({ panelOpen: Boolean(v) }),
+      /** Set (or clear) the walkthrough Inputs focus section. */
+      setInputsFocusSection: (key) => set({ inputsFocusSection: key ?? null }),
 
       // ── Navigation ────────────────────────────────────────────────────────
 
@@ -280,6 +289,7 @@ export const useSimulatorStore = create(
         fleet:      s.fleet,
         controls:   s.controls,
         activePage: s.activePage,
+        panelOpen:  s.panelOpen,
       }),
 
       // After hydration from localStorage, recompute results immediately.
@@ -310,6 +320,7 @@ export const selectFleet            = (s) => s.fleet;
 export const selectControls         = (s) => s.controls;
 export const selectResults          = (s) => s.results;
 export const selectPanelOpen        = (s) => s.panelOpen;
+export const selectInputsFocusSection = (s) => s.inputsFocusSection;
 
 /**
  * Returns the runScenario snapshot — the physics-first single-point analysis.

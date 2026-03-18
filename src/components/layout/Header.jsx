@@ -23,7 +23,6 @@ const PAGE_META = {
   fleet:       { title: 'Fleet Company',               sub: 'Freight operations P&L' },
   scenarios:   { title: 'Scenario Comparison',         sub: 'Base · Optimistic · Stress — same engine, different assumptions' },
   saveload:    { title: 'Save & Export',                sub: 'Named scenario slots · export to JSON and CSV' },
-  assumptions: { title: 'Model Assumptions',           sub: 'Adjust inputs — results update instantly' },
 };
 
 const SCENARIO_BUTTON_CLS = {

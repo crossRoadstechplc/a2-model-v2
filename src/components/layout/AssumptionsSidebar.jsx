@@ -19,7 +19,7 @@
  * All onChange handlers clamp to valid minimums to prevent negative values.
  */
 
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import clsx from 'clsx';
 import {
   Cpu,
@@ -41,6 +41,7 @@ import {
   selectFleet,
   selectSettings,
   selectControls,
+  selectInputsFocusSection,
 } from '../../store/useSimulatorStore';
 
 import { CompactInput }  from '../ui/CompactInput';
@@ -59,15 +60,18 @@ const num   = (v)    => Number(v).toLocaleString('en-US', { maximumFractionDigit
 
 // ─── Section header ───────────────────────────────────────────────────────────
 
-function SectionHeader({ icon: Icon, label, iconColor, borderColor, isOpen, onToggle, badge }) {
+function SectionHeader({ icon: Icon, label, iconColor, borderColor, isOpen, onToggle, badge, highlight = false, highlightClass }) {
   return (
     <button
       onClick={onToggle}
       aria-expanded={isOpen}
       className={clsx(
-        'w-full flex items-center gap-2.5 px-4 py-3 text-left',
-        'hover:bg-slate-50 transition-colors border-l-2',
-        isOpen ? borderColor : 'border-transparent',
+        'w-full flex items-center gap-2.5 px-4 py-3 text-left rounded-lg',
+        'transition-colors border',
+        highlight && (highlightClass ?? 'ring-4 ring-blue-300 shadow-md animate-pulse'),
+        isOpen
+          ? `bg-slate-900/5 border-slate-300 ${borderColor}`
+          : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50',
       )}
     >
       <Icon className={clsx('w-3.5 h-3.5 shrink-0', iconColor)} />
@@ -75,11 +79,16 @@ function SectionHeader({ icon: Icon, label, iconColor, borderColor, isOpen, onTo
         {label}
       </span>
       {badge && (
-        <span className="text-[10px] text-slate-400 font-normal mr-1">{badge}</span>
+        <span className={clsx(
+          'text-[10px] font-semibold mr-1 px-2 py-0.5 rounded-full border',
+          isOpen ? 'text-slate-700 border-slate-300 bg-white/70' : 'text-slate-400 border-slate-200 bg-slate-50',
+        )}>
+          {badge}
+        </span>
       )}
       <ChevronDown
         className={clsx(
-          'w-3.5 h-3.5 text-slate-400 transition-transform duration-200 shrink-0',
+          'w-3.5 h-3.5 text-slate-500 transition-transform duration-200 shrink-0',
           isOpen && 'rotate-180',
         )}
       />
@@ -97,7 +106,12 @@ function SectionBody({ isOpen, children }) {
         isOpen ? 'max-h-[1200px]' : 'max-h-0',
       )}
     >
-      <div className="px-4 pb-3 space-y-0">
+      <div
+        className={clsx(
+          'mx-2 mt-2 px-4 pb-3 pt-3 space-y-2 rounded-lg border',
+          isOpen ? 'bg-slate-900/5 border-slate-200' : 'bg-transparent border-transparent',
+        )}
+      >
         {children}
       </div>
     </div>
@@ -118,7 +132,7 @@ function GroupLabel({ children }) {
 //  SECTION 1 – SYSTEM INPUTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function SystemSection({ isOpen, onToggle }) {
+function SystemSection({ isOpen, onToggle, highlight }) {
   const system    = useSimulatorStore(selectSystem);
   const setSystem = useSimulatorStore((s) => s.setSystem);
   const up = (patch) => setSystem(patch);
@@ -130,6 +144,8 @@ function SystemSection({ isOpen, onToggle }) {
         label="System Inputs"
         iconColor="text-blue-500"
         borderColor="border-blue-500"
+        highlight={highlight}
+        highlightClass="ring-4 ring-blue-300 shadow-lg animate-pulse"
         isOpen={isOpen}
         onToggle={onToggle}
         badge={`${system.trucks} trucks`}
@@ -213,7 +229,7 @@ function SystemSection({ isOpen, onToggle }) {
 //  SECTION 2 – BATTERY COMPANY
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function BatterySection({ isOpen, onToggle }) {
+function BatterySection({ isOpen, onToggle, highlight }) {
   const battery    = useSimulatorStore(selectBattery);
   const setBattery = useSimulatorStore((s) => s.setBattery);
   const up = (patch) => setBattery(patch);
@@ -225,6 +241,8 @@ function BatterySection({ isOpen, onToggle }) {
         label="Battery Co."
         iconColor="text-emerald-500"
         borderColor="border-emerald-500"
+        highlight={highlight}
+        highlightClass="ring-4 ring-emerald-300 shadow-lg animate-pulse"
         isOpen={isOpen}
         onToggle={onToggle}
         badge={`IRR ${pct(battery.batteryIRR * 100)}`}
@@ -322,7 +340,7 @@ function BatterySection({ isOpen, onToggle }) {
 //  SECTION 3 – PLATFORM COMPANY
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function PlatformSection({ isOpen, onToggle }) {
+function PlatformSection({ isOpen, onToggle, highlight }) {
   const platform    = useSimulatorStore(selectPlatform);
   const setPlatform = useSimulatorStore((s) => s.setPlatform);
   const up = (patch) => setPlatform(patch);
@@ -334,6 +352,8 @@ function PlatformSection({ isOpen, onToggle }) {
         label="Platform Co."
         iconColor="text-sky-500"
         borderColor="border-sky-500"
+        highlight={highlight}
+        highlightClass="ring-4 ring-sky-300 shadow-lg animate-pulse"
         isOpen={isOpen}
         onToggle={onToggle}
         badge={`IRR ${pct(platform.platformIRR * 100)}`}
@@ -447,7 +467,7 @@ function PlatformSection({ isOpen, onToggle }) {
 //  SECTION 4 – FLEET COMPANY
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function FleetSection({ isOpen, onToggle }) {
+function FleetSection({ isOpen, onToggle, highlight }) {
   const fleet    = useSimulatorStore(selectFleet);
   const setFleet = useSimulatorStore((s) => s.setFleet);
   const up = (patch) => setFleet(patch);
@@ -459,6 +479,8 @@ function FleetSection({ isOpen, onToggle }) {
         label="Fleet Co."
         iconColor="text-amber-500"
         borderColor="border-amber-500"
+        highlight={highlight}
+        highlightClass="ring-4 ring-amber-300 shadow-lg animate-pulse"
         isOpen={isOpen}
         onToggle={onToggle}
         badge={`Rev ${money(fleet.freightRevenuePerTruck)}/mo`}
@@ -549,7 +571,7 @@ function FleetSection({ isOpen, onToggle }) {
 //  SECTION 5 – SCENARIO CONTROLS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function ControlsSection({ isOpen, onToggle }) {
+function ControlsSection({ isOpen, onToggle, highlight }) {
   const settings       = useSimulatorStore(selectSettings);
   const controls       = useSimulatorStore(selectControls);
   const updateSettings = useSimulatorStore((s) => s.updateSettings);
@@ -566,6 +588,8 @@ function ControlsSection({ isOpen, onToggle }) {
         label="Scenario Controls"
         iconColor="text-violet-500"
         borderColor="border-violet-500"
+        highlight={highlight}
+        highlightClass="ring-4 ring-violet-300 shadow-lg animate-pulse"
         isOpen={isOpen}
         onToggle={onToggle}
         badge={`${settings.projectionYears} yr`}
@@ -678,6 +702,7 @@ const DEFAULT_OPEN = {
 export function AssumptionsSidebar() {
   const setPanelOpen    = useSimulatorStore((s) => s.setPanelOpen);
   const resetToDefaults = useSimulatorStore((s) => s.resetToDefaults);
+  const focusSection = useSimulatorStore(selectInputsFocusSection);
 
   // Accordion open/close state (purely UI — not in Zustand)
   const [open,          setOpen]          = useState(DEFAULT_OPEN);
@@ -685,6 +710,24 @@ export function AssumptionsSidebar() {
   const [confirmReset,  setConfirmReset]  = useState(false);
 
   const toggle = (key) => setOpen((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  const sectionRefs = useRef({});
+  const registerSectionRef = useMemo(() => {
+    return (key) => (el) => {
+      if (!key) return;
+      if (el) sectionRefs.current[key] = el;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!focusSection) return;
+    setOpen((prev) => ({ ...prev, [focusSection]: true }));
+    // Give the expand animation a beat before scrolling.
+    setTimeout(() => {
+      const el = sectionRefs.current?.[focusSection];
+      el?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
+    }, 150);
+  }, [focusSection]);
 
   function handleReset() {
     if (!confirmReset) {
@@ -724,11 +767,21 @@ export function AssumptionsSidebar() {
 
         {/* Dividers between sections */}
         <div className="divide-y divide-slate-100">
-          <SystemSection   isOpen={open.system}   onToggle={() => toggle('system')}   />
-          <BatterySection  isOpen={open.battery}  onToggle={() => toggle('battery')}  />
-          <PlatformSection isOpen={open.platform} onToggle={() => toggle('platform')} />
-          <FleetSection    isOpen={open.fleet}    onToggle={() => toggle('fleet')}    />
-          <ControlsSection isOpen={open.controls} onToggle={() => toggle('controls')} />
+          <div ref={registerSectionRef('system')}>
+            <SystemSection   isOpen={open.system}   onToggle={() => toggle('system')}   highlight={focusSection === 'system'} />
+          </div>
+          <div ref={registerSectionRef('battery')}>
+            <BatterySection  isOpen={open.battery}  onToggle={() => toggle('battery')}  highlight={focusSection === 'battery'} />
+          </div>
+          <div ref={registerSectionRef('platform')}>
+            <PlatformSection isOpen={open.platform} onToggle={() => toggle('platform')} highlight={focusSection === 'platform'} />
+          </div>
+          <div ref={registerSectionRef('fleet')}>
+            <FleetSection    isOpen={open.fleet}    onToggle={() => toggle('fleet')}    highlight={focusSection === 'fleet'} />
+          </div>
+          <div ref={registerSectionRef('controls')}>
+            <ControlsSection isOpen={open.controls} onToggle={() => toggle('controls')} highlight={focusSection === 'controls'} />
+          </div>
         </div>
 
       </div>

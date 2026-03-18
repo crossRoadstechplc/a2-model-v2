@@ -39,10 +39,10 @@ export function CompactInput({
   }
 
   return (
-    <div className="flex items-center justify-between gap-3 py-2 border-b border-slate-50 last:border-0">
+    <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50/60">
       {/* Label column */}
       <div className="flex-1 min-w-0">
-        <p className="text-[11px] font-medium text-slate-700 leading-tight truncate">
+        <p className="text-[11px] font-semibold text-slate-700 leading-tight truncate">
           {label}
         </p>
         {hint && (
@@ -53,9 +53,9 @@ export function CompactInput({
       </div>
 
       {/* Input column */}
-      <div className="flex items-center gap-0.5 shrink-0">
+      <div className="flex items-center gap-0.5 shrink-0 rounded-md border border-slate-300 bg-white px-1.5 py-1 shadow-sm focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-colors">
         {prefix && (
-          <span className="text-[11px] font-medium text-slate-400 select-none">
+          <span className="text-[11px] font-semibold text-slate-500 select-none">
             {prefix}
           </span>
         )}
@@ -69,13 +69,12 @@ export function CompactInput({
           className={clsx(
             inputWidth,
             'h-7 text-xs text-right tabular-nums',
-            'bg-slate-50 border border-slate-200 rounded-md px-2',
-            'focus:outline-none focus:ring-1 focus:ring-blue-400',
-            'focus:border-blue-400 focus:bg-white transition-colors',
+            'bg-transparent border-0 rounded-sm px-1',
+            'focus:outline-none',
           )}
         />
         {suffix && (
-          <span className="text-[11px] text-slate-400 ml-0.5 select-none whitespace-nowrap">
+          <span className="text-[11px] text-slate-500 ml-0.5 select-none whitespace-nowrap">
             {suffix}
           </span>
         )}
