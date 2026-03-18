@@ -3,7 +3,6 @@
  * Admin analytics is gated by password (VITE_ADMIN_PASS), not backend isAdmin.
  * CTRL+Shift+A opens password dialog; correct password shows admin popup.
  */
-
 import { create } from 'zustand';
 
 const useAdminStore = create((set) => ({
