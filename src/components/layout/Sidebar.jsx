@@ -6,17 +6,16 @@
 import clsx from 'clsx';
 import {
   LayoutDashboard,
-  Zap,
-  BatteryCharging,
-  Truck,
   SlidersHorizontal,
   Layers,
   ChevronRight,
   LineChart,
   TrendingUp,
   FolderOpen,
+  BookOpen,
 } from 'lucide-react';
 import { useSimulatorStore, selectControls, selectSettings } from '../../store/useSimulatorStore';
+import useAuthStore from '../../store/useAuthStore';
 import { getScenarioMeta } from '../../data/scenarios';
 
 // Each nav item maps to a page key used in the store
@@ -84,6 +83,7 @@ export function Sidebar() {
   const controls    = useSimulatorStore(selectControls);
   const scenario    = controls.selectedScenario;
   const scenMeta    = getScenarioMeta(scenario);
+  const setShowWalkthroughReplay = useAuthStore((s) => s.setShowWalkthroughReplay);
 
   return (
     <aside className="w-60 shrink-0 bg-slate-900 flex flex-col h-screen sticky top-0 overflow-y-auto">
@@ -170,6 +170,15 @@ export function Sidebar() {
         <p className="text-xs text-slate-600">
           Data saved in your browser.
         </p>
+        <button
+          type="button"
+          onClick={() => setShowWalkthroughReplay(true)}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors"
+          data-testid="sidebar-walkthrough-btn"
+        >
+          <BookOpen className="w-3.5 h-3.5 shrink-0" />
+          Start walkthrough
+        </button>
       </div>
     </aside>
   );

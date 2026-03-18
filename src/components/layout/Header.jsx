@@ -5,6 +5,7 @@
 
 import clsx from 'clsx';
 import { SlidersHorizontal } from 'lucide-react';
+import { UserMenu } from '../auth/UserMenu';
 import {
   useSimulatorStore,
   selectControls,
@@ -81,6 +82,9 @@ export function Header() {
         <span className="hidden sm:inline text-xs text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full">
           {settings.projectionYears}-year model
         </span>
+
+        {/* User menu + logout */}
+        <UserMenu />
 
         {/* Scenario selector — driven by SCENARIO_ORDER from data/scenarios.js */}
         <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg border border-slate-200">

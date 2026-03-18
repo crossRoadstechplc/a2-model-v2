@@ -1,10 +1,11 @@
 /**
  * Root application component.
- * Reads activePage from the Zustand store and renders the correct page
- * inside the AppShell layout (Sidebar + Header + content area).
+ * AppGate wraps the simulator; only authenticated users with NDA accepted
+ * reach AppShell. Simulator logic unchanged.
  */
 
 import { useSimulatorStore }       from './store/useSimulatorStore';
+import { AppGate }                 from './components/auth/AppGate';
 import { AppShell }                from './components/layout/AppShell';
 import { DashboardPage }           from './pages/DashboardPage';
 import { FinancialsPage }          from './pages/FinancialsPage';
@@ -15,6 +16,7 @@ import { FleetPage }               from './pages/FleetPage';
 import { AssumptionsPage }         from './pages/AssumptionsPage';
 import { ScenarioComparisonPage }  from './pages/ScenarioComparisonPage';
 import { SaveLoadPage }            from './pages/SaveLoadPage';
+import { AdminPage }               from './pages/AdminPage';
 
 const PAGE_MAP = {
   dashboard:   <DashboardPage />,
@@ -22,19 +24,24 @@ const PAGE_MAP = {
   insights:    <InsightsPage />,
   scenarios:   <ScenarioComparisonPage />,
   saveload:    <SaveLoadPage />,
-  // Legacy entity pages remain accessible for deep-link purposes
   platform:    <PlatformPage />,
   battery:     <BatteryPage />,
   fleet:       <FleetPage />,
   assumptions: <AssumptionsPage />,
+  admin:       <AdminPage />,
 };
 
-export default function App() {
+function SimulatorContent() {
   const activePage = useSimulatorStore((s) => s.activePage);
+  return <>{PAGE_MAP[activePage] ?? <DashboardPage />}</>;
+}
 
+export default function App() {
   return (
-    <AppShell>
-      {PAGE_MAP[activePage] ?? <DashboardPage />}
-    </AppShell>
+    <AppGate>
+      <AppShell>
+        <SimulatorContent />
+      </AppShell>
+    </AppGate>
   );
 }
