@@ -2,15 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { WalkthroughModal } from './WalkthroughModal';
 
-const mockCompleteWalkthrough = vi.fn();
+const mockMarkWalkthroughComplete = vi.fn();
 const mockSetShowWalkthroughReplay = vi.fn();
 let mockState = {
-  completeWalkthrough: mockCompleteWalkthrough,
-  completeWalkthroughLoading: false,
+  markWalkthroughComplete: mockMarkWalkthroughComplete,
   setShowWalkthroughReplay: mockSetShowWalkthroughReplay,
 };
 
-vi.mock('../../store/useAuthStore', () => ({
+vi.mock('../../store/useWalkthroughStore', () => ({
   default: (selector) => selector(mockState),
 }));
 
@@ -26,14 +25,13 @@ vi.mock('../../store/useSimulatorStore', () => ({
 
 describe('WalkthroughModal', () => {
   beforeEach(() => {
-    mockCompleteWalkthrough.mockReset();
+    mockMarkWalkthroughComplete.mockReset();
     mockSetShowWalkthroughReplay.mockReset();
     mockSimState.setActivePage.mockReset();
     mockSimState.setPanelOpen.mockReset();
     mockSimState.setInputsFocusSection.mockReset();
     mockState = {
-      completeWalkthrough: mockCompleteWalkthrough,
-      completeWalkthroughLoading: false,
+      markWalkthroughComplete: mockMarkWalkthroughComplete,
       setShowWalkthroughReplay: mockSetShowWalkthroughReplay,
     };
   });
@@ -42,14 +40,14 @@ describe('WalkthroughModal', () => {
     render(<WalkthroughModal />);
     expect(screen.getByTestId('walkthrough-modal')).toBeInTheDocument();
     expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByText('Session & Security')).toBeInTheDocument();
-    expect(screen.getByText(/Your session lasts 4 hours/)).toBeInTheDocument();
+    expect(screen.getByText('Local simulator')).toBeInTheDocument();
+    expect(screen.getByText(/runs entirely in your browser/)).toBeInTheDocument();
     expect(screen.getByText(/1 of \d+/)).toBeInTheDocument();
   });
 
   it('Next advances to next step', () => {
     render(<WalkthroughModal />);
-    expect(screen.getByText('Session & Security')).toBeInTheDocument();
+    expect(screen.getByText('Local simulator')).toBeInTheDocument();
     expect(screen.getByTestId('walkthrough-prev')).toBeDisabled();
     fireEvent.click(screen.getByTestId('walkthrough-complete'));
     expect(screen.getByText('How the Simulator Works')).toBeInTheDocument();
@@ -63,63 +61,40 @@ describe('WalkthroughModal', () => {
     expect(screen.getByTestId('walkthrough-prev')).not.toBeDisabled();
 
     fireEvent.click(screen.getByTestId('walkthrough-prev'));
-    expect(screen.getByText('Session & Security')).toBeInTheDocument();
+    expect(screen.getByText('Local simulator')).toBeInTheDocument();
     expect(screen.getByTestId('walkthrough-prev')).toBeDisabled();
   });
 
-  it('Finish on last step calls completeWalkthrough', async () => {
-    mockCompleteWalkthrough.mockResolvedValue({ success: true });
+  it('Finish on last step calls markWalkthroughComplete', () => {
     render(<WalkthroughModal />);
 
-    // Advance to last step
     while (!screen.queryByText('Finish')) {
       fireEvent.click(screen.getByTestId('walkthrough-complete'));
     }
 
     expect(screen.getByText('Tips')).toBeInTheDocument();
-    expect(screen.getByText('Finish')).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('walkthrough-complete'));
 
-    await vi.waitFor(() => {
-      expect(mockCompleteWalkthrough).toHaveBeenCalled();
-    });
+    expect(mockMarkWalkthroughComplete).toHaveBeenCalled();
   });
 
-  it('Skip calls completeWalkthrough', async () => {
-    mockCompleteWalkthrough.mockResolvedValue({ success: true });
-    render(<WalkthroughModal />);
-
-    fireEvent.click(screen.getByTestId('walkthrough-skip'));
-
-    await vi.waitFor(() => {
-      expect(mockCompleteWalkthrough).toHaveBeenCalled();
-    });
-  });
-
-  it('completion calls correct auth action', async () => {
-    mockCompleteWalkthrough.mockResolvedValue({ success: true });
+  it('Skip calls markWalkthroughComplete', () => {
     render(<WalkthroughModal />);
     fireEvent.click(screen.getByTestId('walkthrough-skip'));
-
-    await vi.waitFor(() => {
-      expect(mockCompleteWalkthrough).toHaveBeenCalledTimes(1);
-    });
+    expect(mockMarkWalkthroughComplete).toHaveBeenCalled();
   });
 
-  it('disables buttons while completeWalkthroughLoading', () => {
-    mockState.completeWalkthroughLoading = true;
-    render(<WalkthroughModal />);
-
-    expect(screen.getByTestId('walkthrough-skip')).toBeDisabled();
-    expect(screen.getByTestId('walkthrough-prev')).toBeDisabled();
-    expect(screen.getByTestId('walkthrough-complete')).toBeDisabled();
-    expect(screen.getByText('Saving…')).toBeInTheDocument();
+  it('replay mode closes without marking complete', () => {
+    render(<WalkthroughModal replay />);
+    fireEvent.click(screen.getByTestId('walkthrough-skip'));
+    expect(mockSetShowWalkthroughReplay).toHaveBeenCalledWith(false);
+    expect(mockMarkWalkthroughComplete).not.toHaveBeenCalled();
   });
 
   it('advances from first step to last step', () => {
     render(<WalkthroughModal />);
 
-    expect(screen.getByText('Session & Security')).toBeInTheDocument();
+    expect(screen.getByText('Local simulator')).toBeInTheDocument();
 
     while (!screen.queryByText('Tips')) {
       fireEvent.click(screen.getByTestId('walkthrough-complete'));

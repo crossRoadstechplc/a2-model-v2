@@ -15,7 +15,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { useSimulatorStore, selectControls, selectSettings } from '../../store/useSimulatorStore';
-import useAuthStore from '../../store/useAuthStore';
+import useWalkthroughStore from '../../store/useWalkthroughStore';
 import { getScenarioMeta } from '../../data/scenarios';
 
 // Each nav item maps to a page key used in the store
@@ -87,7 +87,7 @@ export function Sidebar() {
   const controls    = useSimulatorStore(selectControls);
   const scenario    = controls.selectedScenario;
   const scenMeta    = getScenarioMeta(scenario);
-  const setShowWalkthroughReplay = useAuthStore((s) => s.setShowWalkthroughReplay);
+  const setShowWalkthroughReplay = useWalkthroughStore((s) => s.setShowWalkthroughReplay);
 
   return (
     <aside className="w-60 shrink-0 bg-slate-900 flex flex-col h-screen sticky top-0 overflow-y-auto">

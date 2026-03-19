@@ -1,14 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { AppShell } from './AppShell';
 
-const mockHeartbeat = vi.fn();
-
-vi.mock('../../store/useAuthStore', () => ({
+vi.mock('../../store/useWalkthroughStore', () => ({
   default: (selector) =>
     selector({
-      token: 'mock-token',
-      heartbeat: mockHeartbeat,
+      walkthroughSeen: true,
+      showWalkthroughReplay: false,
     }),
 }));
 
@@ -34,18 +32,15 @@ vi.mock('./AssumptionsSidebar', () => ({
 vi.mock('./Header', () => ({ Header: () => <div data-testid="header">Header</div> }));
 
 describe('AppShell', () => {
-  beforeEach(() => {
-    mockHeartbeat.mockClear();
-  });
-
-  it('starts heartbeat loop when mounted (authenticated)', () => {
+  it('renders layout and children', () => {
     render(
       <AppShell>
         <div data-testid="child">Child</div>
-      </AppShell>
+      </AppShell>,
     );
 
     expect(screen.getByTestId('child')).toBeInTheDocument();
-    expect(mockHeartbeat).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('sidebar')).toBeInTheDocument();
+    expect(screen.getByTestId('header')).toBeInTheDocument();
   });
 });

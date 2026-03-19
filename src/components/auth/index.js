@@ -1,9 +1,7 @@
 /**
- * Auth components – gate, screens, shell.
- * All auth logic lives here; simulator store remains separate.
+ * Auth-related UI (standalone: optional screens; no API gate).
  */
 
-export { AppGate } from './AppGate';
 export { AuthErrorBanner } from './AuthErrorBanner';
 export { AuthShell } from './AuthShell';
 export { LoginFlow } from './LoginFlow';

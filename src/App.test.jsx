@@ -2,27 +2,6 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import App from './App.jsx';
 
-vi.mock('./store/useAuthStore', () => ({
-  default: (selector) =>
-    selector({
-      token: 'mock-token',
-      ndaAccepted: true,
-      walkthroughSeen: true,
-      isCheckingSession: false,
-      hydrateSession: vi.fn(),
-      requestOtp: vi.fn(),
-      verifyOtp: vi.fn(),
-      authError: null,
-      requestOtpLoading: false,
-      verifyOtpLoading: false,
-      acceptNda: vi.fn(),
-      acceptNdaLoading: false,
-      completeWalkthrough: vi.fn(),
-      completeWalkthroughLoading: false,
-    }),
-}));
-
-
 vi.mock('./components/layout/AppShell', () => ({
   AppShell: ({ children }) => (
     <div data-testid="app-shell">
@@ -42,7 +21,6 @@ vi.mock('./pages/ScenarioComparisonPage', () => ({
   ScenarioComparisonPage: () => <div>Page</div>,
 }));
 vi.mock('./pages/SaveLoadPage', () => ({ SaveLoadPage: () => <div>Page</div> }));
-vi.mock('./pages/AdminPage', () => ({ AdminPage: () => <div data-testid="admin-page">Admin</div> }));
 
 const mockUseSimulatorStore = vi.fn((fn) =>
   fn({ activePage: 'dashboard', panelOpen: false, controls: { selectedScenario: 'base' } }),
@@ -57,16 +35,17 @@ describe('App', () => {
     expect(App).toBeTypeOf('function');
   });
 
-  it('renders AppGate with simulator content when authenticated', () => {
+  it('renders AppShell with simulator content', () => {
     render(<App />);
     expect(screen.getByTestId('app-shell')).toBeInTheDocument();
   });
 
-  it('renders admin page when activePage is admin', () => {
+  it('falls back to dashboard when activePage is unknown (e.g. removed admin)', () => {
     mockUseSimulatorStore.mockImplementation((fn) =>
       fn({ activePage: 'admin', panelOpen: false, controls: { selectedScenario: 'base' } }),
     );
-    render(<App />);
-    expect(screen.getByTestId('admin-page')).toBeInTheDocument();
+    const { container } = render(<App />);
+    expect(screen.getByTestId('app-shell')).toBeInTheDocument();
+    expect(container.querySelector('main')).toHaveTextContent('Page');
   });
 });

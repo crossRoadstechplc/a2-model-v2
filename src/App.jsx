@@ -1,11 +1,9 @@
 /**
  * Root application component.
- * AppGate wraps the simulator; only authenticated users with NDA accepted
- * reach AppShell. Simulator logic unchanged.
+ * Standalone simulator — no API auth gate; AppShell loads directly.
  */
 
 import { useSimulatorStore }       from './store/useSimulatorStore';
-import { AppGate }                 from './components/auth/AppGate';
 import { AppShell }                from './components/layout/AppShell';
 import { DashboardPage }           from './pages/DashboardPage';
 import { FinancialsPage }          from './pages/FinancialsPage';
@@ -15,7 +13,6 @@ import { BatteryPage }             from './pages/BatteryPage';
 import { FleetPage }               from './pages/FleetPage';
 import { ScenarioComparisonPage }  from './pages/ScenarioComparisonPage';
 import { SaveLoadPage }            from './pages/SaveLoadPage';
-import { AdminPage }               from './pages/AdminPage';
 
 const PAGE_MAP = {
   dashboard:   <DashboardPage />,
@@ -26,7 +23,6 @@ const PAGE_MAP = {
   platform:    <PlatformPage />,
   battery:     <BatteryPage />,
   fleet:       <FleetPage />,
-  admin:       <AdminPage />,
 };
 
 function SimulatorContent() {
@@ -36,10 +32,8 @@ function SimulatorContent() {
 
 export default function App() {
   return (
-    <AppGate>
-      <AppShell>
-        <SimulatorContent />
-      </AppShell>
-    </AppGate>
+    <AppShell>
+      <SimulatorContent />
+    </AppShell>
   );
 }

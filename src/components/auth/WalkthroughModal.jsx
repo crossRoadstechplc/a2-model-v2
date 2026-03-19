@@ -1,22 +1,17 @@
 /**
- * WalkthroughModal – shown once when user enters app and walkthrough not completed.
- * Shown only when: authenticated, NDA accepted, walkthroughSeen = false.
- * Backend walkthrough flag is source of truth. Calls completeWalkthrough on finish/skip.
- *
- * @see API.md POST /auth/complete-walkthrough
+ * WalkthroughModal – shown once until completed; completion persisted locally (no API).
  */
 
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
-import useAuthStore from '../../store/useAuthStore';
+import useWalkthroughStore from '../../store/useWalkthroughStore';
 import { WALKTHROUGH_STEPS } from './WalkthroughSteps';
 import { useSimulatorStore } from '../../store/useSimulatorStore';
 
 export function WalkthroughModal({ replay = false }) {
   const [step, setStep] = useState(0);
-  const completeWalkthrough = useAuthStore((s) => s.completeWalkthrough);
-  const completeWalkthroughLoading = useAuthStore((s) => s.completeWalkthroughLoading);
-  const setShowWalkthroughReplay = useAuthStore((s) => s.setShowWalkthroughReplay);
+  const markWalkthroughComplete = useWalkthroughStore((s) => s.markWalkthroughComplete);
+  const setShowWalkthroughReplay = useWalkthroughStore((s) => s.setShowWalkthroughReplay);
   const setActivePage = useSimulatorStore((s) => s.setActivePage);
   const setPanelOpen = useSimulatorStore((s) => s.setPanelOpen);
   const setInputsFocusSection = useSimulatorStore((s) => s.setInputsFocusSection);
@@ -40,7 +35,7 @@ export function WalkthroughModal({ replay = false }) {
       if (replay) {
         setShowWalkthroughReplay(false);
       } else {
-        completeWalkthrough();
+        markWalkthroughComplete();
       }
     } else {
       setStep((s) => s + 1);
@@ -57,7 +52,7 @@ export function WalkthroughModal({ replay = false }) {
     if (replay) {
       setShowWalkthroughReplay(false);
     } else {
-      completeWalkthrough();
+      markWalkthroughComplete();
     }
   };
 
@@ -100,7 +95,6 @@ export function WalkthroughModal({ replay = false }) {
           <button
             type="button"
             onClick={handleSkip}
-            disabled={completeWalkthroughLoading}
             className="text-sm text-slate-600 underline hover:text-slate-800 disabled:opacity-50"
             data-testid="walkthrough-skip"
           >
@@ -110,7 +104,7 @@ export function WalkthroughModal({ replay = false }) {
             <button
               type="button"
               onClick={handlePrev}
-              disabled={completeWalkthroughLoading || isFirst}
+              disabled={isFirst}
               className="rounded-lg bg-slate-800 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
               data-testid="walkthrough-prev"
             >
@@ -119,15 +113,10 @@ export function WalkthroughModal({ replay = false }) {
           <button
             type="button"
             onClick={handleNext}
-            disabled={completeWalkthroughLoading}
             className="rounded-lg bg-slate-800 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
             data-testid="walkthrough-complete"
           >
-            {completeWalkthroughLoading
-              ? 'Saving…'
-              : isLast
-                ? 'Finish'
-                : 'Next'}
+            {isLast ? 'Finish' : 'Next'}
           </button>
           </div>
         </div>

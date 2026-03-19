@@ -5,8 +5,8 @@
 
 export const WALKTHROUGH_STEPS = [
   {
-    title: 'Session & Security',
-    content: `Your session lasts 4 hours. After it expires, you will need to sign in again with OTP verification. This keeps your access secure.`,
+    title: 'Local simulator',
+    content: `This app runs entirely in your browser. Your assumptions and saved scenarios are stored locally on this device — no sign-in required.`,
   },
   {
     title: 'How the Simulator Works',
