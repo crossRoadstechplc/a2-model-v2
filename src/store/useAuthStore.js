@@ -74,5 +74,4 @@ export const selectIsAuthBusy = (s) =>
   s.completeWalkthroughLoading ||
   s.logoutLoading ||
   s.isCheckingSession;
-
 export default useAuthStore;
